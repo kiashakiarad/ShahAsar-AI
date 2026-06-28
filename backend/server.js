@@ -5,16 +5,15 @@ require("dotenv").config();
 
 const app = express();
 
-// middleware
 app.use(cors());
 app.use(express.json());
 
-// تست سرور
+// سلامت سرور
 app.get("/", (req, res) => {
   res.send("OK");
 });
 
-// پینگ (برای تست آنلاین بودن)
+// ping برای تست
 app.get("/ping", (req, res) => {
   res.send("pong");
 });
@@ -24,8 +23,8 @@ app.post("/chat", async (req, res) => {
   try {
     const message = req.body.message;
 
-    if (!message) {
-      return res.status(400).json({ reply: "پیام خالیه" });
+    if (!message || !message.trim()) {
+      return res.json({ reply: "پیام خالیه 🤖" });
     }
 
     const response = await axios.post(
@@ -35,7 +34,7 @@ app.post("/chat", async (req, res) => {
         messages: [
           {
             role: "system",
-            content: "You are a helpful assistant."
+            content: "You are a helpful assistant speaking Persian."
           },
           {
             role: "user",
@@ -45,24 +44,29 @@ app.post("/chat", async (req, res) => {
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json"
         }
       }
     );
 
-    const reply = response.data.choices?.[0]?.message?.content || "پاسخی دریافت نشد";
+    const reply =
+      response.data?.choices?.[0]?.message?.content ||
+      "پاسخی دریافت نشد";
 
     res.json({ reply });
 
   } catch (err) {
-    console.log("ERROR:", err.response?.data || err.message);
-    res.status(500).json({ reply: "❌ خطا در ارتباط با AI" });
+    console.log(err?.response?.data || err.message);
+    res.status(500).json({
+      reply: "❌ خطا در اتصال به AI"
+    });
   }
 });
 
-// اجرا روی سرور (Render / Fly / VPS)
+// start server
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on port", PORT);
 });
