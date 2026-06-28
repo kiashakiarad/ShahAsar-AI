@@ -103,7 +103,7 @@ async function send() {
   input.value = "";
 
   // درخواست به سرور
-  const res = await fetch("http://localhost:3000/chat", {
+  const res = await fetch("https://shahasar-ai.onrender.com/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
