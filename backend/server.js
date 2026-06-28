@@ -1,51 +1,68 @@
 const express = require("express");
 const cors = require("cors");
+const axios = require("axios");
+require("dotenv").config();
 
 const app = express();
 
-// CORS باز برای GitHub Pages
-app.use(cors({ origin: "*" }));
+// middleware
+app.use(cors());
+app.use(express.json());
 
-// جلوگیری از گیر کردن request
-app.use(express.json({ limit: "1mb" }));
-
-// سلامت سرور (خیلی مهم)
+// تست سرور
 app.get("/", (req, res) => {
-  res.status(200).send("OK");
+  res.send("OK");
 });
 
-// برای UptimeRobot
+// پینگ (برای تست آنلاین بودن)
 app.get("/ping", (req, res) => {
-  res.status(200).send("pong");
+  res.send("pong");
 });
 
-// چت پایدار (بدون async/AI سنگین)
-app.post("/chat", (req, res) => {
+// چت AI
+app.post("/chat", async (req, res) => {
   try {
-    const message = (req.body.message || "").toString();
+    const message = req.body.message;
 
-    if (!message.trim()) {
-      return res.json({ reply: "پیام خالیه 🤖" });
+    if (!message) {
+      return res.status(400).json({ reply: "پیام خالیه" });
     }
 
-    let reply = "";
+    const response = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model: "openai/gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful assistant."
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ]
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
 
-    if (message.includes("سلام")) {
-      reply = "سلام 👋 خوش اومدی";
-    } else if (message.includes("چطوری")) {
-      reply = "من خوبم 😄 تو چطوری؟";
-    } else {
-      reply = "گرفتم 👌: " + message;
-    }
+    const reply = response.data.choices?.[0]?.message?.content || "پاسخی دریافت نشد";
 
     res.json({ reply });
-  } catch (e) {
-    res.status(500).json({ reply: "خطا در سرور ❌" });
+
+  } catch (err) {
+    console.log("ERROR:", err.response?.data || err.message);
+    res.status(500).json({ reply: "❌ خطا در ارتباط با AI" });
   }
 });
 
-// مهم: bind برای Render/VPS
+// اجرا روی سرور (Render / Fly / VPS)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("Server running on", PORT);
+  console.log("Server running on port", PORT);
 });
