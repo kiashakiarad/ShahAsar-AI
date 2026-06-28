@@ -2,22 +2,123 @@
 <html lang="fa">
 <head>
   <meta charset="UTF-8">
-  <title>ShahAsar AI Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <title>ShahAsar AI</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #0f172a;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 20px;
+    }
+
+    #chat {
+      width: 420px;
+      height: 500px;
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+
+    .user {
+      background: #2563eb;
+      align-self: flex-end;
+    }
+
+    .ai {
+      background: #334155;
+      align-self: flex-start;
+    }
+
+    .inputBox {
+      margin-top: 10px;
+      display: flex;
+      width: 420px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    button {
+      margin-left: 8px;
+      padding: 10px 15px;
+      border: none;
+      background: #22c55e;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #16a34a;
+    }
+  </style>
 </head>
+
 <body>
 
-  <div class="container">
-    <h1>🤖 ShahAsar AI</h1>
+<h1>🤖 ShahAsar AI</h1>
 
-    <div id="chatBox"></div>
+<div id="chat"></div>
 
-    <div class="inputBox">
-      <input id="userInput" placeholder="پیام خود را بنویس..." />
-      <button onclick="sendMessage()">ارسال</button>
-    </div>
-  </div>
+<div class="inputBox">
+  <input id="msg" placeholder="پیام بنویس..." />
+  <button onclick="send()">ارسال</button>
+</div>
 
-  <script src="script.js"></script>
+<script>
+async function send() {
+  const input = document.getElementById("msg");
+  const text = input.value;
+
+  if (!text) return;
+
+  const chat = document.getElementById("chat");
+
+  // پیام کاربر
+  chat.innerHTML += `<div class="msg user">🧑 شما: ${text}</div>`;
+
+  input.value = "";
+
+  // درخواست به سرور
+  const res = await fetch("http://localhost:3000/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: text })
+  });
+
+  const data = await res.json();
+
+  // جواب AI
+  chat.innerHTML += `<div class="msg ai">🤖 AI: ${data.reply}</div>`;
+
+  chat.scrollTop = chat.scrollHeight;
+}
+</script>
+
 </body>
 </html>
