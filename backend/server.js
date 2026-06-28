@@ -3,27 +3,49 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// CORS باز برای GitHub Pages
+app.use(cors({ origin: "*" }));
 
-// تست سلامت سرور
+// جلوگیری از گیر کردن request
+app.use(express.json({ limit: "1mb" }));
+
+// سلامت سرور (خیلی مهم)
 app.get("/", (req, res) => {
-  res.send("OK");
+  res.status(200).send("OK");
 });
 
+// برای UptimeRobot
 app.get("/ping", (req, res) => {
-  res.send("pong");
+  res.status(200).send("pong");
 });
 
-// چت ساده
+// چت پایدار (بدون async/AI سنگین)
 app.post("/chat", (req, res) => {
-  const message = req.body.message || "";
-  res.json({ reply: "AI: " + message });
+  try {
+    const message = (req.body.message || "").toString();
+
+    if (!message.trim()) {
+      return res.json({ reply: "پیام خالیه 🤖" });
+    }
+
+    let reply = "";
+
+    if (message.includes("سلام")) {
+      reply = "سلام 👋 خوش اومدی";
+    } else if (message.includes("چطوری")) {
+      reply = "من خوبم 😄 تو چطوری؟";
+    } else {
+      reply = "گرفتم 👌: " + message;
+    }
+
+    res.json({ reply });
+  } catch (e) {
+    res.status(500).json({ reply: "خطا در سرور ❌" });
+  }
 });
 
-// مهم: Railway / Render هر دو اینو می‌خوان
+// مهم: bind برای Render/VPS
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on", PORT);
 });
