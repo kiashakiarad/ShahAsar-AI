@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# logs
+logs/
+*.log
+
+# build output (اگر بعداً اضافه شد)
+dist/
+build/
+
+# optional test files
+coverage/
+
+# temporary files
+*.tmp
