@@ -8,24 +8,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// تست سرور
 app.get("/", (req, res) => {
   res.send("OK");
 });
 
-// ping
 app.get("/ping", (req, res) => {
   res.send("pong");
 });
 
-// CHAT AI (اصلی)
 app.post("/chat", async (req, res) => {
   try {
     const message = req.body.message;
-
-    if (!message) {
-      return res.json({ reply: "پیام خالیه" });
-    }
 
     const result = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
@@ -43,15 +36,15 @@ app.post("/chat", async (req, res) => {
       }
     );
 
-    const reply = result.data.choices[0].message.content;
-
-    return res.json({ reply });
+    res.json({
+      reply: result.data.choices[0].message.content
+    });
 
   } catch (err) {
-    console.log("ERROR:", err?.response?.data || err.message);
+    console.log(err?.response?.data || err.message);
 
-    return res.json({
-      reply: "❌ خطا در اتصال به AI"
+    res.json({
+      reply: "❌ خطا در AI"
     });
   }
 });
@@ -59,5 +52,5 @@ app.post("/chat", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("Server running on", PORT);
+  console.log("Server running");
 });
