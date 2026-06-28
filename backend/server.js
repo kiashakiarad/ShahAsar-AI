@@ -8,17 +8,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// سلامت سرور
+// تست سلامت سرور
 app.get("/", (req, res) => {
   res.send("OK");
 });
 
-// ping برای تست
+// ping
 app.get("/ping", (req, res) => {
   res.send("pong");
 });
 
-// چت AI
+// چت AI واقعی
 app.post("/chat", async (req, res) => {
   try {
     const message = req.body.message;
@@ -34,7 +34,7 @@ app.post("/chat", async (req, res) => {
         messages: [
           {
             role: "system",
-            content: "You are a helpful assistant speaking Persian."
+            content: "You are a helpful assistant that answers in Persian."
           },
           {
             role: "user",
@@ -50,14 +50,15 @@ app.post("/chat", async (req, res) => {
       }
     );
 
-    const reply =
-      response.data?.choices?.[0]?.message?.content ||
-      "پاسخی دریافت نشد";
+    const reply = response.data?.choices?.[0]?.message?.content;
 
-    res.json({ reply });
+    res.json({
+      reply: reply || "پاسخی دریافت نشد"
+    });
 
   } catch (err) {
-    console.log(err?.response?.data || err.message);
+    console.log("ERROR:", err?.response?.data || err.message);
+
     res.status(500).json({
       reply: "❌ خطا در اتصال به AI"
     });
